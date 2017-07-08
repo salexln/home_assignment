@@ -26,8 +26,8 @@ class StdOutListener(StreamListener):
     def on_data(self, data):
         # import pdb; pdb.set_trace()
         curr_time = timeit.default_timer()
-        if (curr_time - self._start_time > 60):
-            return False
+        # if (curr_time - self._start_time > 60):
+        #     return False
 
         json_data = json.loads(data)
         if self._is_english(json_data):

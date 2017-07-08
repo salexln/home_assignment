@@ -40,3 +40,14 @@ class SynonymGroup(object):
 
                 self._total_appearances += 1
                 break
+
+    def __eq__(self, other):
+        return self._total_appearances == other._total_appearances
+
+    def __lt__(self, other):
+        return self._total_appearances < other._total_appearances
+
+    def print_group(self):
+        for word_appearance in self._words_appearances:
+            print '{}: {}, '.format(word_appearance.word, word_appearance.appearance),
+        print 'Total: {}\n'.format(self._total_appearances)
