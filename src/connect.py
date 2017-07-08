@@ -4,11 +4,10 @@ from tweepy import OAuthHandler
 from tweepy import Stream
 
 
-access_token = '883627537032785921-S3YvAf4wWX8ZZ2uMsRSecD3CJDYUzbk'
-access_token_secret = 'mLNgapLcew5fiZ1FUf6D7wlAivJDpOjZ1eBjv8Di9G6zm'
-consumer_key = 'sQenv4drpWaPV4OjLlLnm689u'
-consumer_secret = 'GsndjQyrWi7b6WN06AZkXDQxORLpBliCR3ZvoqiYM9ToezVHty'
-
+access_token = ''
+access_token_secret = ''
+consumer_key = ''
+consumer_secret = ''
 
 """
 Dependencies
