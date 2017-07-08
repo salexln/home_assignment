@@ -9,8 +9,10 @@ class WordAppearance(object):
 class SynonymGroup(object):
     def __init__(self, words):
         # holds a tupple of word: num  of appearances
+        self._words_appearances = []
+
         for word in words:
-            word = Word(word, 1)
+            word = WordAppearance(word)
             self._words_appearances.append(word)
 
         self._total_appearances = len(self._words_appearances)
