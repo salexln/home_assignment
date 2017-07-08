@@ -24,8 +24,9 @@ class StdOutListener(StreamListener):
         self._tweet_queue = tweet_queue
 
     def on_data(self, data):
+        # import pdb; pdb.set_trace()
         curr_time = timeit.default_timer()
-        if (curr_time - self._start_time > 10):
+        if (curr_time - self._start_time > 60):
             return False
 
         json_data = json.loads(data)

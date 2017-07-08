@@ -1,9 +1,12 @@
 
 import argh
 from connect import StdOutListener
+# from synonym_group import SynonymGroup
 from tweepy import OAuthHandler
 from tweepy import Stream
 import Queue
+import threading
+import time
 
 
 access_token = '883627537032785921-S3YvAf4wWX8ZZ2uMsRSecD3CJDYUzbk'
@@ -12,29 +15,34 @@ consumer_key = 'sQenv4drpWaPV4OjLlLnm689u'
 consumer_secret = 'GsndjQyrWi7b6WN06AZkXDQxORLpBliCR3ZvoqiYM9ToezVHty'
 
 
-def add_to_structure(words):
-    
+# def add_to_structure(words):
 
-def connect_to_tweeter():
-    #This handles Twitter authetification and the connection to Twitter Streaming API
-    tweet_queue = Queue.Queue()
+
+
+def get_tweeter_stream(tweet_queue):
     listener = StdOutListener(tweet_queue)
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
     stream = Stream(auth, listener)
 
-    #This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
-    # stream.filter(track=['python', 'javascript', 'ruby'])
     stream.sample()
-
-    # print 'Total num of tweets {}'.format(listener._number_of_tweets)
     print 'queue size: {}'.format(tweet_queue.qsize())
 
+
+def get_tweeter_stream_in_thread(tweet_queue):
+    t = threading.Thread(target=get_tweeter_stream, kwargs={'tweet_queue':tweet_queue})
+    t.start()
 
 @argh.arg('--synonyms', help='Number of synonyms', type=str, required=True)
 def main(**kwargs):
     # print int(kwargs['synonyms'])
-    connect_to_tweeter()
+    tweet_queue = Queue.Queue()
+    print 'Starting tweeter stream'
+    get_tweeter_stream_in_thread(tweet_queue)
+    time.sleep(20)
+    print 'Tweeter stream is done, read {} tweets'.format(tweet_queue.qsize())
+    words_to_groups = {}
+
 
 if __name__ == '__main__':
     parser = argh.ArghParser()
