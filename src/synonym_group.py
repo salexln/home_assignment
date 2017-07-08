@@ -17,6 +17,12 @@ class SynonymGroup(object):
 
         self._total_appearances = 0
 
+    def total_appearances(self):
+        return self._total_appearances
+
+    def words_appearances(self):
+        return self._words_appearances
+
     def remove_word_appearance(self, word):
         for x in self._words_appearances:
             if x.word == word:
@@ -27,7 +33,7 @@ class SynonymGroup(object):
                 break
 
     def update_appearance(self, word):
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         for x in self._words_appearances:
             if x.word == word:
                 x.appearance += 1

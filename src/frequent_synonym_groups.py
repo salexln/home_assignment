@@ -81,6 +81,29 @@ class FrequentSynonyms(object):
         t = threading.Thread(target=self._add_to_synonym_group)
         t.start()
 
+    def _find_most_frequent_synonym_groups(self):
+        while True:
+            time.sleep(2)
+            max_appearances = -1
+            max_group = None
+            for group in self._word_to_synonym_group.itervalues():
+                # import pdb; pdb.set_trace()
+                total_appearances = group.total_appearances()
+                if max_appearances == -1 or max_appearances < total_appearances:
+                    max_appearances = total_appearances
+                    max_group = group
+
+            print '*** Most frequent appearances: ***'
+            if max_group is not None:
+                for word_appearance in max_group.words_appearances():
+                    print '{} : {}'.format(word_appearance.word, word_appearance.appearance),
+                print 'Total: {}\n'.format(max_appearances)            
+
+    def find_most_frequent_synonym_groups_in_thread(self):
+        t = threading.Thread(target=self._find_most_frequent_synonym_groups)
+        t.start()
+
+
 
 @argh.arg('--synonyms', help='Number of synonyms', type=str, required=True)
 def main(**kwargs):
@@ -88,8 +111,11 @@ def main(**kwargs):
     frequent_synonyms = FrequentSynonyms(int(kwargs['synonyms']))
 
     frequent_synonyms.start_tweeter_stream_in_thread()
+
     time.sleep(10)
     frequent_synonyms.start_adding_to_synonym_group_thread()
+
+    frequent_synonyms.find_most_frequent_synonym_groups_in_thread()
 
 
 if __name__ == '__main__':
