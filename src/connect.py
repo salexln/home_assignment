@@ -2,12 +2,11 @@ import json
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
+import timeit
+import Queue
 
 
-access_token = ''
-access_token_secret = ''
-consumer_key = ''
-consumer_secret = ''
+
 
 """
 Dependencies
@@ -19,15 +18,23 @@ Dependencies
 
 
 class StdOutListener(StreamListener):
+    def __init__(self, tweet_queue):
+        self._start_time = timeit.default_timer()
+        self._number_of_tweets = 0
+        self._tweet_queue = tweet_queue
 
     def on_data(self, data):
-        print '*'*50
-        # print data
+        curr_time = timeit.default_timer()
+        if (curr_time - self._start_time > 10):
+            return False
+
         json_data = json.loads(data)
         if self._is_english(json_data):
             splitted = json_data['text'].split()
             text = [x.encode('utf-8') for x in splitted]
-            print text
+            # print text
+            self._number_of_tweets += 1
+            self._tweet_queue.put((curr_time, text))
 
         return True
 
@@ -54,3 +61,5 @@ if __name__ == '__main__':
     #This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
     # stream.filter(track=['python', 'javascript', 'ruby'])
     stream.sample()
+
+    print 'Total num of tweets {}'.format(listener._number_of_tweets)
