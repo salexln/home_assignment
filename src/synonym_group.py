@@ -3,7 +3,7 @@
 class WordAppearance(object):
     def __init__(self, word):
         self.word = word
-        self.appearance = 1
+        self.appearance = 0
 
 
 class SynonymGroup(object):
@@ -15,7 +15,7 @@ class SynonymGroup(object):
             word = WordAppearance(word)
             self._words_appearances.append(word)
 
-        self._total_appearances = len(self._words_appearances)
+        self._total_appearances = 0
 
     def remove_word_appearance(self, word):
         for x in self._words_appearances:
@@ -27,6 +27,7 @@ class SynonymGroup(object):
                 break
 
     def update_appearance(self, word):
+        import pdb; pdb.set_trace()
         for x in self._words_appearances:
             if x.word == word:
                 x.appearance += 1

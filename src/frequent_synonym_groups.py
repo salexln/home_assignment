@@ -68,10 +68,13 @@ class FrequentSynonyms(object):
                 if self._word_to_synonym_group.get(word) is None:
                     # add a new synonym group
                     new_synonym_group = SynonymGroup(synonyms)
+                    new_synonym_group.update_appearance(word)
+                    # add entries for all words in synonym_group:
+                    for w in synonyms:
+                        self._word_to_synonym_group[word] = new_synonym_group
                 else:
                     # update existing synonym group
-                    import pdb; pdb.set_trace()
-                    synonym_group = self._word_to_synonym_group.get(synonyms[0])
+                    synonym_group = self._word_to_synonym_group.get(word)
                     synonym_group.update_appearance(word)
 
     def start_adding_to_synonym_group_thread(self):
