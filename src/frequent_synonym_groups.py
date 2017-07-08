@@ -39,7 +39,8 @@ class FrequentSynonyms(object):
     def get_synonym_group_from_word(self, word):
         synonym_group = []
 
-        if word[0].isalpha():
+        # we do not want number and words like 'a' and 'I'
+        if word[0].isalpha() and len(word) > 1:
             synsets = []
             try:
                 synsets = wn.synsets(word)
@@ -97,7 +98,7 @@ class FrequentSynonyms(object):
             if max_group is not None:
                 for word_appearance in max_group.words_appearances():
                     print '{} : {}'.format(word_appearance.word, word_appearance.appearance),
-                print 'Total: {}\n'.format(max_appearances)            
+                print 'Total: {}\n'.format(max_appearances)
 
     def find_most_frequent_synonym_groups_in_thread(self):
         t = threading.Thread(target=self._find_most_frequent_synonym_groups)
