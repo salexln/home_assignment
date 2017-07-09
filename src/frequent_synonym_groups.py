@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from connect import StdOutListener
 from synonym_group import SynonymGroup
 from tweepy import OAuthHandler
@@ -165,7 +167,7 @@ class FrequentSynonyms(object):
             last_tweet = self._tweets.queue[0]
             last_time = last_tweet[0]
 
-            if curr_time - last_time > 60:            
+            if curr_time - last_time > 60:
                 tweet = self._tweets.get()[1]
                 self._remove_words_from_group(words=tweet)
 

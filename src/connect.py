@@ -5,14 +5,6 @@ from tweepy import Stream
 import timeit
 import Queue
 
-"""
-Dependencies
-
-- pip install nltk
-- nltk.download()   (download all nltk)
-- pip install tweepy
-"""
-
 
 class StdOutListener(StreamListener):
     def __init__(self, tweet_queue):
