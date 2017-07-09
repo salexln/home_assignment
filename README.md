@@ -8,7 +8,7 @@ When invoked, frequent_synonym_groups.py starts listen to Twitter stream, and ev
 #### Command example:
 ./frequent_synonym_groups.py --synonyms 3
 
-# python depandencies:
+### python depandencies:
 You need to do the following in order to run it:
 1. Download the code
 2. Install the requirements:
