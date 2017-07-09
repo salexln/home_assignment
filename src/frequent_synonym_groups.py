@@ -47,9 +47,7 @@ class FrequentSynonyms(object):
                 synsets = []
 
             # we use set for word uniqness:
-            s = set()
-            for synset in synsets:
-                s.add(synset.name().split('.')[0].encode('utf-8'))
+            s = set(synset.name().split('.')[0].encode('utf-8') for synset in synsets)
 
             if len(s) != 0:
                 synonym_group = [x for x in s]
