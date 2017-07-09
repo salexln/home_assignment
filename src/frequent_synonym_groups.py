@@ -7,6 +7,7 @@ import threading
 import time
 from nltk.corpus import wordnet as wn
 import argparse
+import timeit
 
 access_token = '883627537032785921-S3YvAf4wWX8ZZ2uMsRSecD3CJDYUzbk'
 access_token_secret = 'mLNgapLcew5fiZ1FUf6D7wlAivJDpOjZ1eBjv8Di9G6zm'
@@ -16,19 +17,23 @@ consumer_secret = 'GsndjQyrWi7b6WN06AZkXDQxORLpBliCR3ZvoqiYM9ToezVHty'
 
 class FrequentSynonyms(object):
     def __init__(self, synonyms):
-        self._tweet_queue = Queue.Queue()
+        self._tweets_from_stream = Queue.Queue()
         self._number_of_top_synonyms = synonyms
         self._word_to_synonym_group = {}
         self._synonym_groups = []
+        self._tweets = Queue.Queue()
 
     def _start_tweeter_stream(self):
-        listener = StdOutListener(self._tweet_queue)
+        """
+        Starts getting tweets
+        """
+        listener = StdOutListener(self._tweets_from_stream)
         auth = OAuthHandler(consumer_key, consumer_secret)
         auth.set_access_token(access_token, access_token_secret)
         stream = Stream(auth, listener)
 
         stream.sample()
-        print 'queue size: {}'.format(self._tweet_queue.qsize())
+        print 'queue size: {}'.format(self._tweets_from_stream.qsize())
 
     def start_tweeter_stream_in_thread(self):
         """
@@ -38,14 +43,21 @@ class FrequentSynonyms(object):
         t = threading.Thread(target=self._start_tweeter_stream)
         t.start()
 
+    def _valid_word(self, word):
+        """
+        We do not want numbers and words like 'a' and 'I'
+        """
+        if word[0].isalpha() and len(word) > 1:
+            return True
+        return False
+
     def get_synonym_group_from_word(self, word):
         """
         Using WordNet returns the synonym group for a given word
         """
         synonym_group = []
 
-        # we do not want number and words like 'a' and 'I'
-        if word[0].isalpha() and len(word) > 1:
+        if self._valid_word(word=word):
             synsets = []
             try:
                 synsets = wn.synsets(word)
@@ -57,6 +69,7 @@ class FrequentSynonyms(object):
 
             if len(s) != 0:
                 synonym_group = [x for x in s]
+
         return synonym_group
 
     def _add_to_synonym_group(self):
@@ -65,10 +78,13 @@ class FrequentSynonyms(object):
         """
         while True:
             # this may be faster than the read from Twitter stream, so we need to wait
-            if self._tweet_queue.qsize() == 0:
+            if self._tweets_from_stream.qsize() == 0:
                 continue
 
-            tweet = self._tweet_queue.get()[1]
+            tweet_with_time = self._tweets_from_stream.get()
+            cleaned_tweet = self._clean_tweet(tweet_with_time)
+            self._tweets.put(cleaned_tweet)
+            tweet = cleaned_tweet[1]
             for word in tweet:
                 synonyms = self.get_synonym_group_from_word(word)
 
@@ -91,6 +107,14 @@ class FrequentSynonyms(object):
                     synonym_group = self._word_to_synonym_group.get(word)
                     synonym_group.update_appearance(word)
 
+    def _clean_tweet(self, tweet):
+        """
+        cleans the tweet from unwanted words
+        """
+        time = tweet[0]
+        data = [x for x in tweet[1] if self._valid_word(x)]
+        return (time, data)
+
     def start_adding_to_synonym_group_in_thread(self):
         """
         Runs the thread that adds synonym groups to data structure
@@ -104,6 +128,8 @@ class FrequentSynonyms(object):
         """
         while True:
             time.sleep(2)
+
+            self._remove_outdated_words()
 
             sorted_groups = sorted(self._synonym_groups, reverse=True)
 
@@ -124,6 +150,53 @@ class FrequentSynonyms(object):
         """
         t = threading.Thread(target=self._find_most_frequent_synonym_groups)
         t.start()
+
+    def _remove_outdated_words(self):
+        """
+        Removes all the tweets that are older than 60 seconds
+        and updates the data structures accordingly
+        """
+        curr_time = timeit.default_timer()
+
+        while True:
+            if self._tweets.qsize() == 0:
+                break
+
+            last_tweet = self._tweets.queue[0]
+            last_time = last_tweet[0]
+
+            if curr_time - last_time > 60:            
+                tweet = self._tweets.get()[1]
+                self._remove_words_from_group(words=tweet)
+
+                for word in tweet:
+                    if word in self._word_to_synonym_group:
+                        if self._word_to_synonym_group[word].total_appearances == 0:
+                            # we need to remove these words from all data structures
+                            self._remove_words_from_all_structures(words=tweet)
+            else:
+                break
+
+    def _remove_words_from_all_structures(self, words):
+        """
+        Removes the words from all data structures
+        """
+
+        for w in words:
+            if w in self._word_to_synonym_group:
+                group = self._word_to_synonym_group.pop(w)
+                if group in self._synonym_groups:
+                    self._synonym_groups.remove(group)
+
+    def _remove_words_from_group(self, words):
+        """
+        Removes the words from SynonymGroup
+        """
+        for word in words:
+            if not self._valid_word(word=word):
+                continue
+            if word in self._word_to_synonym_group:
+                self._word_to_synonym_group[word].remove_word_appearance(word)
 
 
 def run(args):
