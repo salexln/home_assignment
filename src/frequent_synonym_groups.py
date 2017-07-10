@@ -84,11 +84,11 @@ class FrequentSynonyms(object):
                 continue
 
             tweet_with_time = self._tweets_from_stream.get()
-            cleaned_tweet = self._clean_tweet(tweet_with_time)
+            cleaned_tweet = self._clean_tweet(tweet=tweet_with_time)
             self._tweets.put(cleaned_tweet)
             tweet = cleaned_tweet[1]
             for word in tweet:
-                synonyms = self.get_synonym_group_from_word(word)
+                synonyms = self.get_synonym_group_from_word(word=word)
 
                 if len(synonyms) == 0:
                     continue
@@ -97,7 +97,7 @@ class FrequentSynonyms(object):
                 if self._word_to_synonym_group.get(word) is None:
                     # add a new synonym group
                     new_synonym_group = SynonymGroup(synonyms)
-                    new_synonym_group.update_appearance(word)
+                    new_synonym_group.update_appearance(word=word)
 
                     self._synonym_groups.append(new_synonym_group)
 
@@ -107,14 +107,14 @@ class FrequentSynonyms(object):
                 else:
                     # update existing synonym group
                     synonym_group = self._word_to_synonym_group.get(word)
-                    synonym_group.update_appearance(word)
+                    synonym_group.update_appearance(word=word)
 
     def _clean_tweet(self, tweet):
         """
         cleans the tweet from unwanted words
         """
         time = tweet[0]
-        data = [x for x in tweet[1] if self._valid_word(x)]
+        data = [x for x in tweet[1] if self._valid_word(word=x)]
         return (time, data)
 
     def start_adding_to_synonym_group_in_thread(self):
@@ -198,7 +198,7 @@ class FrequentSynonyms(object):
             if not self._valid_word(word=word):
                 continue
             if word in self._word_to_synonym_group:
-                self._word_to_synonym_group[word].remove_word_appearance(word)
+                self._word_to_synonym_group[word].remove_word_appearance(word=word)
 
 
 def run(args):
